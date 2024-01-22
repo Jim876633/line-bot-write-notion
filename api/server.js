@@ -73,7 +73,7 @@ async function handleEvent(event) {
         replyToken: event.replyToken,
         messages: [{
           type: 'text',
-          text: '新增 Notion 失敗'
+          text: 'Add Notion Page Fail'
         }],
       });
     } else {
@@ -109,7 +109,7 @@ async function createNotionPage({ title, selectName }) {
     });
 
     if (queryRes.results.length > 0) {
-      console.log('Notion Page 已存在');
+      console.log('Link already exists');
       return true
     }
 
@@ -125,7 +125,7 @@ async function createNotionPage({ title, selectName }) {
 
     const createRes = await notion.pages.create(createPageReq)
     if (createRes) {
-      console.log('新增 Notion 成功');
+      console.log('Add Notion Page Success');
       return true
     }
   } catch (err) {

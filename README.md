@@ -2,11 +2,15 @@
 
 This is a line bot webhook to pass the link to notion database.
 
-![line-message](/img/line-message.jpg | width=100)
+The reason I created this is that every time I use social media and come across interesting articles or videos, I share the link in a group chat that only I am part of. However, I can't keep track of the links to remember what I have read or watched. So, I developed this Line bot to automatically record the links in a Notion database.
+
+Line:
+
+<img src="/img/line-message.jpg" width="400">
+
+Notion:
 
 ![notion-result](/img/notion-result.jpg)
-
-The reason I created this is that every time I use social media and come across interesting articles or videos, I share the link in a group chat that only I am part of. However, I can't keep track of the links to remember what I have read or watched. So, I developed this Line bot to automatically record the links in a Notion database.
 
 ## Getting Started
 

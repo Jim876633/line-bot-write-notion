@@ -1,10 +1,10 @@
-const express = require('express');
-const line = require('@line/bot-sdk');
+const express = require("express");
+const line = require("@line/bot-sdk");
 const { Client } = require("@notionhq/client");
-const { getCreateNotionPageObj } = require('../utils');
+const { getCreateNotionPageObj } = require("../utils");
 const crypto = require("crypto");
-const serverless = require('serverless-http');
-require('dotenv').config()
+const serverless = require("serverless-http");
+require("dotenv").config();
 
 const app = express();
 
@@ -15,43 +15,41 @@ const config = {
 
 const notion = new Client({
   auth: process.env.NOTION_TOKEN,
-})
+});
 
 const client = new line.messagingApi.MessagingApiClient({
   channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN,
 });
 
-const pageName = process.env.PAGE_NAME
+const pageName = process.env.PAGE_NAME;
 
 /* -------------------------------------------------------------------------- */
 /*                                    API                                     */
 /* -------------------------------------------------------------------------- */
 
-app.get('/', async (req, res) => {
-  res.send('Line Bot Connect Notion Server is running');
-})
+app.get("/", async (req, res) => {
+  res.send("Line Bot Connect Notion Server is running");
+});
 
-app.post('/webhook', line.middleware(config), (req, res) => {
-
+app.post("/webhook", line.middleware(config), (req, res) => {
   // Make sure the request is from LINE
-  const signature = crypto.createHmac('SHA256', config.channelSecret)
+  const signature = crypto
+    .createHmac("SHA256", config.channelSecret)
     .update(JSON.stringify(req.body))
-    .digest('base64');
+    .digest("base64");
 
-  if (signature === req.headers['x-line-signature']) {
-    Promise
-      .all(req.body.events.map(handleEvent))
-      .then((result) => res.json(result));
+  if (signature === req.headers["x-line-signature"]) {
+    Promise.all(req.body.events.map(handleEvent)).then((result) =>
+      res.json(result)
+    );
   } else {
-    res.status(400).send('Invalid signature');
+    res.status(400).send("Invalid signature");
   }
 });
 
-
-console.log('Server running at http://localhost:8888/')
+console.log("Server running at http://localhost:8888/");
 
 exports.handler = serverless(app);
-
 
 /* -------------------------------------------------------------------------- */
 /*                                  Function                                  */
@@ -59,22 +57,28 @@ exports.handler = serverless(app);
 
 async function handleEvent(event) {
   console.log(event);
-  if (event.message?.type === 'text') {
-    const text = event.message.text
+  if (event.message?.type === "text") {
+    const text = event.message.text;
 
-    let selectName = 'Blog'
-    if (text.includes('youtube')) {
-      selectName = 'Video'
+    let selectName = "Blog";
+    if (text.includes("youtube")) {
+      selectName = "Video";
     }
 
-    const isSuccess = await createNotionPage({ title: text, selectName })
+    if (text.includes("jimhuang.dev")) {
+      return Promise.resolve(null);
+    }
+
+    const isSuccess = await createNotionPage({ title: text, selectName });
     if (!isSuccess) {
       return client.replyMessage({
         replyToken: event.replyToken,
-        messages: [{
-          type: 'text',
-          text: 'Add Notion Page Fail'
-        }],
+        messages: [
+          {
+            type: "text",
+            text: "Add Notion Page Fail",
+          },
+        ],
       });
     } else {
       return Promise.resolve(null);
@@ -87,8 +91,8 @@ async function handleEvent(event) {
 async function createNotionPage({ title, selectName }) {
   try {
     if (!title || !selectName) {
-      console.log('title or selectName is empty');
-      return false
+      console.log("title or selectName is empty");
+      return false;
     }
 
     const searchRes = await notion.search({
@@ -101,35 +105,43 @@ async function createNotionPage({ title, selectName }) {
     const queryRes = await notion.databases.query({
       database_id: databaseId,
       filter: {
-        property: 'title',
+        property: "title",
         title: {
-          equals: title
-        }
+          equals: title,
+        },
       },
     });
 
     if (queryRes.results.length > 0) {
-      console.log('Link already exists');
-      return true
+      console.log("Link already exists");
+      return true;
     }
 
     const data = await notion.databases.retrieve({ database_id: databaseId });
     const propertiesValues = Object.values(data.properties);
 
+    const titleId = propertiesValues.find(
+      (property) => property.type === "title"
+    ).id;
+    const selectId = propertiesValues.find(
+      (property) => property.type === "select"
+    ).id;
 
-    const titleId = propertiesValues.find((property) => property.type === 'title').id;
-    const selectId = propertiesValues.find((property) => property.type === 'select').id;
+    const createPageReq = getCreateNotionPageObj({
+      databaseId,
+      titleId,
+      title,
+      selectId,
+      selectName,
+    });
 
-    const createPageReq = getCreateNotionPageObj({ databaseId, titleId, title, selectId, selectName });
-
-
-    const createRes = await notion.pages.create(createPageReq)
+    const createRes = await notion.pages.create(createPageReq);
     if (createRes) {
-      console.log('Add Notion Page Success');
-      return true
+      console.log("Add Notion Page Success");
+      return true;
     }
   } catch (err) {
     console.log(err);
-    return false
+    return false;
   }
 }

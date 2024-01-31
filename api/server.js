@@ -33,17 +33,22 @@ app.get("/", async (req, res) => {
 
 app.post("/webhook", line.middleware(config), (req, res) => {
   // Make sure the request is from LINE
-  const signature = crypto
-    .createHmac("SHA256", config.channelSecret)
-    .update(JSON.stringify(req.body))
-    .digest("base64");
+  try {
+    const signature = crypto
+      .createHmac("SHA256", config.channelSecret)
+      .update(JSON.stringify(req.body))
+      .digest("base64");
 
-  if (signature === req.headers["x-line-signature"]) {
-    Promise.all(req.body.events.map(handleEvent)).then((result) =>
-      res.json(result)
-    );
-  } else {
-    res.status(400).send("Invalid signature");
+    if (signature === req.headers["x-line-signature"]) {
+      Promise.all(req.body.events.map(handleEvent)).then((result) =>
+        res.json(result)
+      );
+    } else {
+      console.log("Invalid signature");
+      res.status(400).send("Invalid signature");
+    }
+  } catch (err) {
+    console.log(err);
   }
 });
 

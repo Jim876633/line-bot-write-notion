@@ -76,15 +76,7 @@ async function handleEvent(event) {
 
     const isSuccess = await createNotionPage({ title: text, selectName });
     if (!isSuccess) {
-      return client.replyMessage({
-        replyToken: event.replyToken,
-        messages: [
-          {
-            type: "text",
-            text: "Add Notion Page Fail",
-          },
-        ],
-      });
+      console.log("Add Notion Page Fail");
     } else {
       return Promise.resolve(null);
     }

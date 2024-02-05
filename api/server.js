@@ -70,16 +70,8 @@ async function handleEvent(event) {
       selectName = "Video";
     }
 
-    if (text.includes("jimhuang.dev")) {
-      return Promise.resolve(null);
-    }
-
-    const isSuccess = await createNotionPage({ title: text, selectName });
-    if (!isSuccess) {
-      console.log("Add Notion Page Fail");
-    } else {
-      return Promise.resolve(null);
-    }
+    await createNotionPage({ title: text, selectName });
+    return Promise.resolve(null);
   } else {
     return Promise.resolve(null);
   }

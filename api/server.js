@@ -40,9 +40,8 @@ app.post("/webhook", line.middleware(config), (req, res) => {
       .digest("base64");
 
     if (signature === req.headers["x-line-signature"]) {
-      Promise.all(req.body.events.map(handleEvent)).then((result) =>
-        res.json(result)
-      );
+      res.json(null);
+      Promise.all(req.body.events.map(handleEvent));
     } else {
       console.log("Invalid signature");
       res.status(400).send("Invalid signature");
